@@ -1,0 +1,9 @@
+'use strict'
+
+HFS.onEvent('showPlay', async ({ meta, setCover }) => {
+	if (!meta.artwork.length && meta.artist)
+		setCover(await albumArt(meta.artist, meta))
+})
+
+// https://unpkg.com/album-art@4.0.0/index.js
+;((e,t)=>{"function"==typeof define&&define.amd?define(["cross-fetch"],t):"object"==typeof exports?module.exports=t(require("cross-fetch")):e.albumArt=t(e.fetch)})(this,(e=>async(t,r,n)=>{if("string"!=typeof t)throw new TypeError("Expected search query to be a string");"function"==typeof r&&(n=r,r=null),"function"!=typeof n&&(n=null);let o=t.replace("&","and");const s=Object.assign({album:null,size:null},r),i="small",a="medium";let c="artist";null!==s.album&&(c="album",o+=` ${s.album}`);const f=`https://api.spotify.com/v1/search${`?q=${encodeURIComponent(o)}&type=${c}&limit=1`}`,l="3f974573800a4ff5b325de9795b8e603:ff188d2860ff44baa57acc79c121a3b9";let u;if("undefined"!=typeof btoa)u=btoa(l);else{if(!Buffer)throw new Error("No suitable environment found");u=Buffer.from(l).toString("base64")}let p=null;const d=await e("https://accounts.spotify.com/api/token",{method:"post",body:"grant_type=client_credentials",headers:{"Content-Type":"application/x-www-form-urlencoded",Authorization:`Basic ${u}`}}).then((e=>e.json())).then((e=>e.access_token)).catch((e=>{p=e})),h=!p&&await e(f,{method:"get",headers:{"Content-Type":"application/x-www-form-urlencoded",Authorization:`Bearer ${d}`}}).then((e=>e.json())).then((e=>{if(void 0!==e.error)return Promise.reject(new Error(`JSON - ${e.error} ${e.message}`));if(!e[c+"s"]||0===e[c+"s"].items.length)return Promise.reject(new Error("No results found"));const t=e[c+"s"].items[0].images;let r=t[0],n=t[0];for(const e of t)parseInt(e.width)<parseInt(r.width)&&(r=e),parseInt(e.width)>parseInt(n.width)&&(n=e);return s.size===i?r.url:s.size===a&&t.length>1?t[1].url:n.url})).catch((e=>{p=e}));if(n)return n(p,h);if(p)throw p;return h}));
